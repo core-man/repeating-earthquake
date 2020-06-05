@@ -12,12 +12,11 @@
 #include <string.h>
 #include <unistd.h>
 #include <malloc.h>
-#include "complex.h"
 #include <math.h>
+#include "complex.h"
 #include "fftw3.h"
 #include "sac.h"
 #include "sac1.h"
-#include "tau.h"
 #define FL 256
 #define REARTH 6371
 #define eps 1.0e-5
@@ -50,14 +49,14 @@ int main(int argc, char *argv[]){
     int	*nd, *P_flag, len_tmp, i_tmp;
     char cp_tmp[FL], delims[]=".", *split_cp=NULL;
 
-    int len = 0, i, len1, *len1_valid, len1_valid_tmp = 0, len2=0, j, len_tmp_valid = 0, num, k;
+    int i, len=0, len1, *len1_valid, len1_valid_tmp=0, len2=0, j, len_tmp_valid=0, num, k;
     int opt, ii, imax;
 
     float **data, *data_tmp;
-    double *b, *tt, *ts, tk1 = 0.0, tk2 = 0.0, delta=0.025;
+    double *b, *tt, *ts, tk1=5.0, tk2=15.0, delta=0.025;
     float *ccf;
     char ph[8], ht[8];
-    int BpFlag;
+    int BpFlag=0;
 
     char knetwk[20], kstnm[20], kloc[20], kcmp[20], kdate[30];
     char knetwk1[20], kstnm1[20], kloc1[20], kcmp1[20], kdate1[30];
@@ -70,8 +69,8 @@ int main(int argc, char *argv[]){
 
 
     /* read arguments */
-    if (argc < 2) {
-        fprintf(stderr, "Usage: %s [-t t1,t2 -d delta] masterlist lists\n", argv[0]);
+    if (argc < 4) {
+        fprintf(stderr, "Usage: %s [-t tk1,tk2] [-d delta] -ph phase -h tmark [-b BpFlag] masterlist [more lists]\n", argv[0]);
         exit(1);
     }
 
@@ -93,8 +92,7 @@ int main(int argc, char *argv[]){
             sscanf(optarg, "%d", &BpFlag);
             break;
         default:
-            fprintf(stderr, "Usage: %s [-t t1,t2 -d delta -p P] "
-		    "list1 list2\n", argv[0]);
+            fprintf(stderr, "Usage: %s [-t tk1,tk2] [-d delta] -ph phase -h tmark [-b BpFlag] masterlist more lists\n", argv[0]);
             exit(1);
         }
     }
@@ -238,6 +236,8 @@ int main(int argc, char *argv[]){
     for(i = 0; i < *len1_valid; i++){
         //fprintf(stderr,"%s\n", str[i]);
 
+        /* get network, station, location etc. */
+        /* you may change them for you directory structure and file name */
         cp = strrchr(str[i], '/');
         if (cp == NULL) {
             cp = str[i];
@@ -246,12 +246,10 @@ int main(int argc, char *argv[]){
             cp++;
         }
 
-        /* get network, station, location etc. */
-        /* you may change them for you directory structure and file name */
         //sscanf(cp, "%[^.].%[^.].%[^.].%[^.].%[^.]", knetwk, kstnm, kloc,kcmp, kdate);
         //sscanf(cp, "%[^.].%[^.].%[^.].%[^.].", kdate, knetwk, kstnm,kloc);
         sscanf(cp, "%[^.].%[^.].%[^.].", knetwk, kstnm, kloc);
-        Getname(str[i], kdate);
+        //Getname(str[i], kdate);
         //fprintf(stderr,"%s %s %s %s\n", kdate, knetwk, kstnm, kloc);
 
         strcpy(cp_tmp,cp);
@@ -269,16 +267,21 @@ int main(int argc, char *argv[]){
 
         //fprintf(stderr, "cross correlation %d	%d %s\n",i,len_tmp, kdate);
 
+
         //for(j = i+1;j < len_tmp; j++){
         for(j = i+1;j < len_tmp_valid; j++){
+            //fprintf(stderr,"%s\n", str[j]);
+
+            /* distance between two events */
             //edist = dist(ela[i], elo[i], ela[j], elo[j]);
             //fprintf(stderr,"edist is %f\n",edist);
             edist = (REARTH-evdp[i])*(REARTH-evdp[i])+(REARTH-evdp[j])*(REARTH-evdp[j])-2*(REARTH-evdp[i])*(REARTH-evdp[j])*cos(dist(ela[i], elo[i], ela[j], elo[j]));
             edist= sqrt(edist);
-            //fprintf(stderr,"%s\n", str[j]);
             //fprintf(stderr,"edist is %f\n",edist);
             //fprintf(stderr,"edist is %f	%f\n",evdp[i], evdp[j]);
 
+            /* get network, station, location etc. */
+            /* you may change them for you directory structure and file name */
             cp = strrchr(str[j], '/');
             if (cp == NULL) {
                 cp = str[j];
@@ -288,12 +291,11 @@ int main(int argc, char *argv[]){
             }
 
             //sscanf(cp, "%[^.].%[^.].%[^.].%[^.].%[^.]", knetwk1, kstnm1, kloc1,kcmp1, kdate1);
-            sscanf(cp, "%[^.].%[^.].%[^.].", knetwk1, kstnm1, kloc1);
-            Getname(str[j], kdate1);
             //sscanf(cp, "%[^.].%[^.].%[^.].%[^.].", kdate1, knetwk1, kstnm1,kloc1);
+            sscanf(cp, "%[^.].%[^.].%[^.].", knetwk1, kstnm1, kloc1);
+            //Getname(str[j], kdate1);
 
             strcpy(cp_tmp,cp);
-            //fprintf(stderr,"%s\n",cp_tmp);
             split_cp=strtok(cp_tmp,delims);
             i_tmp=0;
             while(split_cp!=NULL){
@@ -306,21 +308,16 @@ int main(int argc, char *argv[]){
                 split_cp=strtok(NULL,delims);
             }
 
-            delta_date=fabs(atol(kdate)-atol(kdate1));
-            //fprintf(stderr, "cross correlation %ld	%ld\n",atol(kdate),atol(kdate1));
+            /* origin time difference between two events */
+            //delta_date=fabs(atol(kdate)-atol(kdate1));
+            //fprintf(stderr, "cross correlation %ld %ld\n",atol(kdate),atol(kdate1));
             //fprintf(stderr, "cross correlation %d	%d	%s %s %f	%f\n",i, j, kdate,kdate1,edist,delta_date);
 
 
-
-
-            //if(edist <= 60 && delta_date >= 3000 && (strcmp(knetwk,knetwk1)==0) && (strcmp(kstnm,kstnm1)==0)){ //The two earthquakes must be close between hypocenter and far from origin time.
-            //if(edist <= 60 && delta_date > 0 && (strcmp(knetwk,knetwk1)==0) && (strcmp(kstnm,kstnm1)==0)){
-
-            /*relocation*/
-            //if(edist <= 60 && delta_date > 0){
-
-            /*calculate ccf*/
-            if(1){
+            /* The two earthquakes must be close between hypocenter and far from origin time */
+            //if(edist <= 60 && delta_date >= 3000 && (strcmp(knetwk,knetwk1)==0) && (strcmp(kstnm,kstnm1)==0)){
+            /* The two earthquakes must be close between hypocenter */
+            if (edist <= 60 && (strcmp(knetwk,knetwk1)==0) && (strcmp(kstnm,kstnm1)==0)) {
                 //fprintf(stderr, "cross correlation %s %s	%f\n",kdate,kdate1,edist);
                 if ((cc = malloc((nd[i] + nd[j] - 1) * sizeof(*cc))) == NULL) {
                     fprintf(stderr, "allocation failed for data, npts\n");
@@ -345,6 +342,8 @@ int main(int argc, char *argv[]){
                     //fprintf(fcr,"%s  %s  %f  %f  %f %f\n",str[i],str[j],ccv.ccmax*ccv.scale,-ccv.imax*delta,-(ts[i]-ts[j]),edist);
                 }
 
+
+                /* to be tested in the future */
                 //if (((fabs(ccv.ccmax * ccv.scale)) > 1.0) && ((fabs(ccv.imax * delta)) < 20)) {
                 /*if ((fabs(ccv.ccmax * ccv.scale)) >= 0.8) {
                     //snprintf(fcrr_sac, 256,"/home/yaojy/Test/%s.%s.%s.%s.%s.%s.cr.SAC", knetwk, kstnm,kloc,kloc1, kdate, kdate1);
@@ -621,7 +620,7 @@ int rsachead(int *P_flag, char **str, int len, int len1, int *len1_valid, double
         /* find start point and point number */
         ns=0;
         if ( (tk2+tk1)> 0 ) {
-            nd=(tk1+tk2+0.00001)/delta;
+            nd=(tk1+tk2+eps)/delta;
 
             for(num = 0; num < npts; num++){
                 ts = b + num*delta;
@@ -632,7 +631,7 @@ int rsachead(int *P_flag, char **str, int len, int len1, int *len1_valid, double
             }
 
             if (num==0) {
-                nd=(tt+tk2-ts+0.00001)/delta+1;
+                nd=(tt+tk2-ts+eps)/delta+1;
             }
             //fprintf(stderr,"%d  %d  %d\n",nd,npts,ns);
 
@@ -753,7 +752,7 @@ int rsacdata(int *P_flag, char **str, char **str1, float **data, int *nd, double
             /* find start point and point number */
             ns=0;
             if ((tk2+tk1)>0) {
-                nd[k]=(tk1+tk2+0.00001)/delta;
+                nd[k]=(tk1+tk2+eps)/delta;
 
                 for(num = 0; num < npts[k]; num++){
                     ts[k]=b[k]+num*delta;
@@ -764,7 +763,7 @@ int rsacdata(int *P_flag, char **str, char **str1, float **data, int *nd, double
                 }
 
                 if(num == 0) {
-                    nd[k]=(tt[k]+tk2-ts[k]+0.00001)/delta+1;
+                    nd[k]=(tt[k]+tk2-ts[k]+eps)/delta+1;
                 }
 
                 if(npts[k] < (ns + nd[k])) {
