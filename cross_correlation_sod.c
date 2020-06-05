@@ -83,14 +83,14 @@ int main(int argc, char *argv[]){
         case 'd':
             sscanf(optarg, "%lf", &delta);
             break;
-	    case 'p':
-	        sscanf(optarg, "%s", ph);
+        case 'p':
+            sscanf(optarg, "%s", ph);
             break;
-	    case 'h':
-	        sscanf(optarg, "%s", ht);
+        case 'h':
+            sscanf(optarg, "%s", ht);
             break;
-	    case 'b':
-	        sscanf(optarg, "%d", &BpFlag);
+        case 'b':
+        sscanf(optarg, "%d", &BpFlag);
             break;
         default:
             fprintf(stderr, "Usage: %s [-t t1,t2 -d delta -p P] "
@@ -229,7 +229,6 @@ int main(int argc, char *argv[]){
     //for(i = 0; i < len_tmp; i++){
 	for(i = 0; i < *len1_valid; i++){
 		//fprintf(stderr,"%s\n", str[i]);
-
 
 		cp = strrchr(str[i], '/');
     	if (cp == NULL) {
