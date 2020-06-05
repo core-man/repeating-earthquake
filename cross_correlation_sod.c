@@ -686,7 +686,6 @@ int rsacdata(int *P_flag, char **str, char **str1, float **data, int *nd, double
         exit(1);
     }*/
 
-
     k=0;
     for(i=0;i<len;i++){
         //fprintf(stderr,"%d	%d\n",P_flag[i], len);
@@ -700,28 +699,26 @@ int rsacdata(int *P_flag, char **str, char **str1, float **data, int *nd, double
                 continue;
             }
 
+            strcpy(str[k], str1[i]);
+            //fprintf(stderr,"***********###############%s	%s\n",str[k],str1[i]);
+            //fprintf(fp1,"%s\n",str[k]);
+            npts[k] = hdr.npts;
+            b[k] = hdr.b;
+            //delta[k] = hdr.delta;
+            //tt[k] = hdr.t1;
+            ela[k] = hdr.evla;
+            elo[k] = hdr.evlo;
+            sla[k] = hdr.stla;
+            slo[k] = hdr.stlo;
+            gcar[k] = hdr.gcarc;
+            //evdp[k] = hdr.evdp;        // the unit it kilometer
+            evdp[k] = hdr.evdp / 1000.0; // the unit is meter
+            //fprintf(stderr,"%s\n",ph);
 
-
-			strcpy(str[k], str1[i]);
-//			fprintf(stderr,"***********###############%s	%s\n",str[k],str1[i]);
-//			fprintf(fp1,"%s\n",str[k]);
-			npts[k] = hdr.npts;
-			b[k] = hdr.b;
-//			delta[k] = hdr.delta;
-//			tt[k] = hdr.t1;
-			ela[k] = hdr.evla;
-			elo[k] = hdr.evlo;
-			sla[k] = hdr.stla;
-			slo[k] = hdr.stlo;
-			gcar[k] = hdr.gcarc;
-			//evdp[k] = hdr.evdp;
-			evdp[k] = hdr.evdp / 1000.0;	// the unit is meter for sod
-//		fprintf(stderr,"%s\n",ph);
-
-		if(strcmp(ph,"t1")==0){
-			tt[k] = hdr.t1;
-		}else if(strcmp(ph,"t2")==0){
-			tt[k] = hdr.t2;
+            if(strcmp(ph,"t1")==0){
+                tt[k] = hdr.t1;
+            }else if(strcmp(ph,"t2")==0){
+	            tt[k] = hdr.t2;
 		}else if(strcmp(ph,"t3")==0){
 			tt[k] = hdr.t3;
 		}else if(strcmp(ph,"t4")==0){
@@ -806,6 +803,7 @@ int rsacdata(int *P_flag, char **str, char **str1, float **data, int *nd, double
 }
 
 
+/* cross-correlation in frequency domain */
 ccvalue crosscorrelation(int nd, int nd1, float *data, float *data1, double *cc){
 	int k, num, nw, nfft;
 	int imax;
@@ -917,26 +915,26 @@ ccvalue crosscorrelation(int nd, int nd1, float *data, float *data1, double *cc)
 }
 
 
+/* find event origin time */
 int Getname(char str[FL], char *name)
 {
+    char cp[FL], *split_cp = NULL, delims[] = "/";
+    int i = 0;
 
-	char cp[FL], *split_cp = NULL, delims[] = "/";
-	int i = 0;
+    strcpy(cp, str);
+    split_cp = strtok(cp, delims);
+    //fprintf(stderr, "#####****%s*****\n", split_cp);
+    //fprintf(stderr, "#####****%s*****\n", cp);
 
-	strcpy(cp, str);
-	split_cp = strtok(cp, delims);
-	//fprintf(stderr, "#####****%s*****\n", split_cp);
-	//fprintf(stderr, "#####****%s*****\n", cp);
+    while ( (split_cp = strtok(NULL, delims)) && i < 0) {
+        strcpy(cp, split_cp);
+        //fprintf(stderr, "((((****%s*****\n", cp);
+        //fprintf(stderr, "((((****%s*****\n", split_cp);
+        i++;
+    }
+    //fprintf(stderr, "((((****%s*****\n", split_cp);
+    strcpy(name, split_cp);
 
-	while ( (split_cp = strtok(NULL, delims)) && i < 0) {
-		strcpy(cp, split_cp);
-		//fprintf(stderr, "((((****%s*****\n", cp);
-		//fprintf(stderr, "((((****%s*****\n", split_cp);
-		i++;
-	}
-	//fprintf(stderr, "((((****%s*****\n", split_cp);
-	strcpy(name, split_cp);
-
-	return 1;
-
+    return 1;
 }
+
