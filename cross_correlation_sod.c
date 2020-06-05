@@ -638,13 +638,13 @@ int rsachead(int *P_flag, char **str, int len, int len1, int *len1_valid, double
         if(nd < 2 || ts >= tt + tk2){
             //fprintf(stderr,"%d	%f	%f\n%s\n", nd, ts, tt, str[i]);
             continue;
-		}// The time window is not in the time interval of data.
+        }// The time window is not in the time interval of data.
 
         //fprintf(stderr,"%d	%f	%f\n%s\n", nd, ts, tt, str[i]);
         len_valid++;
 
         if(i < len1){*len1_valid=len_valid;}
-		P_flag[i]=1;
+        P_flag[i]=1;
     }
 
     //fprintf(stderr,"%d %d\n",len_valid, *len1_valid);
