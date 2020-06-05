@@ -90,7 +90,7 @@ int main(int argc, char *argv[]){
             sscanf(optarg, "%s", ht);
             break;
         case 'b':
-        sscanf(optarg, "%d", &BpFlag);
+            sscanf(optarg, "%d", &BpFlag);
             break;
         default:
             fprintf(stderr, "Usage: %s [-t t1,t2 -d delta -p P] "
@@ -162,48 +162,48 @@ int main(int argc, char *argv[]){
     }
 
     /* check valid line number */
-	len1_valid=&len2;
+    len1_valid=&len2;
     //fprintf(stderr,"%d	%d	%d\n",len, len1, *len1_valid);
-	//fprintf(stderr,"%s:Read sachead to determine which data are chosen to read\n",argv[optind]);
-	len_tmp=rsachead(P_flag,str1,len,len1,len1_valid,tk1,tk2,delta,ht);
-	len1_valid_tmp = *len1_valid;
+    //fprintf(stderr,"%s:Read sachead to determine which data are chosen to read\n",argv[optind]);
+    len_tmp=rsachead(P_flag,str1,len,len1,len1_valid,tk1,tk2,delta,ht);
+    len1_valid_tmp = *len1_valid;
     //fprintf(stderr,"%d	%d	%d	%d\n",len, len1, *len1_valid, len_tmp);
 
 
     /* initialize variables */
-	str = (char**)malloc(sizeof(char*)*len_tmp);
-	for(i=0;i<len_tmp;i++){
-		str[i] = (char*)malloc(sizeof(char)*FL);
-	}
-	data=(float**)malloc(sizeof(float*)*len_tmp);
-	npts=(int*)malloc(sizeof(int)*len_tmp);
+    str = (char**)malloc(sizeof(char*)*len_tmp);
+    for(i=0;i<len_tmp;i++){
+        str[i] = (char*)malloc(sizeof(char)*FL);
+    }
+    data=(float**)malloc(sizeof(float*)*len_tmp);
+    npts=(int*)malloc(sizeof(int)*len_tmp);
     //b=(float*)malloc(sizeof(float)*len_tmp);
     //tt=(float*)malloc(sizeof(float)*len_tmp);
-	b=(double*)malloc(sizeof(double)*len_tmp);
-	tt=(double*)malloc(sizeof(double)*len_tmp);
+    b=(double*)malloc(sizeof(double)*len_tmp);
+    tt=(double*)malloc(sizeof(double)*len_tmp);
     //delta=(float*)malloc(sizeof(float)*len_tmp);
     //delta=(double*)malloc(sizeof(double)*len_tmp);
 
-	ela=(double*)malloc(sizeof(double)*len_tmp);
-	elo=(double*)malloc(sizeof(double)*len_tmp);
-	sla=(double*)malloc(sizeof(double)*len_tmp);
-	slo=(double*)malloc(sizeof(double)*len_tmp);
-	gcar=(double*)malloc(sizeof(double)*len_tmp);
-	evdp=(double*)malloc(sizeof(double)*len_tmp);
+    ela=(double*)malloc(sizeof(double)*len_tmp);
+    elo=(double*)malloc(sizeof(double)*len_tmp);
+    sla=(double*)malloc(sizeof(double)*len_tmp);
+    slo=(double*)malloc(sizeof(double)*len_tmp);
+    gcar=(double*)malloc(sizeof(double)*len_tmp);
+    evdp=(double*)malloc(sizeof(double)*len_tmp);
 
     //ts=(float*)malloc(sizeof(float)*len_tmp);
-	ts=(double*)malloc(sizeof(double)*len_tmp);
-	nd=(int*)malloc(sizeof(int)*len_tmp);
+    ts=(double*)malloc(sizeof(double)*len_tmp);
+    nd=(int*)malloc(sizeof(int)*len_tmp);
 
     /* read sac data */
     //fprintf(stderr,"%s:Read sacdata\n",argv[optind]);
-	len_tmp_valid = rsacdata(P_flag,str,str1,data,nd,ts,npts,b,delta,tt,ela,elo,evdp,sla,slo,gcar,len1_valid,len,len1,tk1,tk2,ht,BpFlag);
+    len_tmp_valid = rsacdata(P_flag,str,str1,data,nd,ts,npts,b,delta,tt,ela,elo,evdp,sla,slo,gcar,len1_valid,len,len1,tk1,tk2,ht,BpFlag);
 
-	free(P_flag);
-	for (i=0; i < len; i++) {
-		free(str1[i]);
-	}
-	free(str1);
+    free(P_flag);
+    for (i=0; i < len; i++) {
+        free(str1[i]);
+    }
+    free(str1);
 
     /* check valid sacfile number */
     //fprintf(stderr,"len: %d		len_valid: %d\n",len_tmp, len_tmp_valid);
