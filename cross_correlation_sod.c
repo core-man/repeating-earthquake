@@ -606,41 +606,49 @@ int rsachead(int *P_flag, char **str, int len, int len1, int *len1_valid, double
         //tt = hdr.t2;
         //fprintf(stderr,"****%s	%f****\n", ph, tt);
 
-		if(fabs(tt+12345)< 1.e-5){continue;}
-		ns=0;
-		if((tk2+tk1)> 0){
-    		nd=(tk1+tk2+0.00001)/delta;
-    		for(num = 0; num < npts; num++){
-    			ts = b + num*delta;
-      			if(ts < (tt - tk1))
-					ns++;
-      			else
-      				break;
-    		}
-    		if(num==0){
-    	  		nd=(tt+tk2-ts+0.00001)/delta+1;
-    		}
-//	  	fprintf(stderr,"%d  %d  %d\n",nd,npts,ns);
-	  		if(npts < (ns + nd))
-    			nd=npts-ns;
-		} else {
-    		nd = npts;
-			ts=b;
-		}
-	//  	fprintf(stderr,"%s\n",str[i]);
-//	  	fprintf(stderr,"The master event:%20.15f %20.18f  %20.18f  %d\n",ts, b,delta,num);
-		if(nd < 2 || ts >= tt + tk2){
-//	  		fprintf(stderr,"%d	%f	%f\n%s\n", nd, ts, tt, str[i]);
-			continue;
-		}	//The time window is not in the time interval of data.
-	  	//fprintf(stderr,"%d	%f	%f\n%s\n", nd, ts, tt, str[i]);
-		len_valid++;
-		if(i < len1){*len1_valid=len_valid;}
-		P_flag[i]=1;
-	}
-//	fprintf(stderr,"%d %d\n",len_valid, *len1_valid);
-	return len_valid;
+        if(fabs(tt+12345)< 1.e-5){continue;}
 
+        ns=0;
+        if ( (tk2+tk1)> 0 ) {
+            nd=(tk1+tk2+0.00001)/delta;
+
+            for(num = 0; num < npts; num++){
+                ts = b + num*delta;
+                if (ts < (tt - tk1))
+                    ns++;
+                else
+                    break;
+            }
+
+            if (num==0) {
+                nd=(tt+tk2-ts+0.00001)/delta+1;
+            }
+            //fprintf(stderr,"%d  %d  %d\n",nd,npts,ns);
+            if (npts < (ns + nd)) {
+                nd=npts-ns;
+            }
+        } else {
+            nd = npts;
+            ts=b;
+        }
+
+        //fprintf(stderr,"%s\n",str[i]);
+        //fprintf(stderr,"The master event:%20.15f %20.18f  %20.18f  %d\n",ts, b,delta,num);
+
+        if(nd < 2 || ts >= tt + tk2){
+            //fprintf(stderr,"%d	%f	%f\n%s\n", nd, ts, tt, str[i]);
+            continue;
+		}// The time window is not in the time interval of data.
+
+        //fprintf(stderr,"%d	%f	%f\n%s\n", nd, ts, tt, str[i]);
+        len_valid++;
+
+        if(i < len1){*len1_valid=len_valid;}
+		P_flag[i]=1;
+    }
+
+    //fprintf(stderr,"%d %d\n",len_valid, *len1_valid);
+    return len_valid;
 }
 
 int rsacdata(int *P_flag,	char **str, char **str1, float **data, int *nd, double *ts, int *npts, double *b, double delta, double *tt, double *ela, double *elo, double *evdp, double *sla, double *slo, double *gcar, int *len1_valid, int len, int len1, double tk1, double tk2, char ph[], int BpFlag){
