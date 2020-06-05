@@ -2,7 +2,7 @@
  * This code is used to do cross-correlation between sacfile lists
  *
  * History
- *      -     Li Sun         Initial coding
+ *      -     Li Sun         initial coding
  *   10/2013  Jiayuan Yao    re-organize the structures
  *   07/2015  Jiayuan Yao    set reading data error
  ******************************************************************/
@@ -23,9 +23,9 @@
 #define eps 1.0e-5
 
 typedef struct _ccvalue{
-	int imax;
-	double ccmax;
-	double scale;
+    int imax;
+    double ccmax;
+    double scale;
 }ccvalue;
 
 double htoe(int year, int mon, int day, int hour, int min, double sec);
@@ -43,56 +43,55 @@ int Getname(char str[FL], char *name);
 int main(int argc, char *argv[]){
 
     char filen[FL], **str, **str1;
-	int *npts;
+    int *npts;
     double *ela, *elo, *evdp, *sla, *slo, *gcar;
     double delta_date;
 
-	int	*nd, *P_flag, len_tmp, i_tmp;
-	char cp_tmp[FL], delims[]=".", *split_cp=NULL;
+    int	*nd, *P_flag, len_tmp, i_tmp;
+    char cp_tmp[FL], delims[]=".", *split_cp=NULL;
 
     int len = 0, i, len1, *len1_valid, len1_valid_tmp = 0, len2=0, j, len_tmp_valid = 0, num, k;
     int opt, ii, imax;
 
-	float **data, *data_tmp;
-	double *b, *tt, *ts, tk1 = 0.0, tk2 = 0.0, delta=0.025;
-	float *ccf;
-	char ph[8], ht[8];
-	int BpFlag;
+    float **data, *data_tmp;
+    double *b, *tt, *ts, tk1 = 0.0, tk2 = 0.0, delta=0.025;
+    float *ccf;
+    char ph[8], ht[8];
+    int BpFlag;
 
-	char knetwk[20], kstnm[20], kloc[20], kcmp[20], kdate[30];
+    char knetwk[20], kstnm[20], kloc[20], kcmp[20], kdate[30];
     char knetwk1[20], kstnm1[20], kloc1[20], kcmp1[20], kdate1[30];
     char fcrr_sac[FL], ccfname[FL], *cp;
-	double edist;
+    double edist;
     double inv_nfft, pw, pw1, scale, cc0, ccmax, *cc;
     struct sac_head hdr = sac_null;
     FILE *fp, *fcr;
-	ccvalue ccv;
+    ccvalue ccv;
 
 
     /* read arguments */
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s  [-t t1,t2 -d delta] masterlist lists\n",
-		argv[0]);
+        fprintf(stderr, "Usage: %s [-t t1,t2 -d delta] masterlist lists\n", argv[0]);
         exit(1);
     }
 
-  	while ((opt = getopt(argc, argv, "t:d:p:h:b:")) != -1) {
+    while ((opt = getopt(argc, argv, "t:d:p:h:b:")) != -1) {
         switch(opt) {
-	case 't':
-	    sscanf(optarg, "%lf,%lf", &tk1, &tk2);
-	    break;
-	case 'd':
-	    sscanf(optarg, "%lf", &delta);
-	    break;
-	case 'p':
-	    sscanf(optarg, "%s", ph);
-		break;
-	case 'h':
-	    sscanf(optarg, "%s", ht);
-		break;
-	case 'b':
-	    sscanf(optarg, "%d", &BpFlag);
-		break;
+        case 't':
+            sscanf(optarg, "%lf,%lf", &tk1, &tk2);
+            break;
+	    case 'd':
+	        sscanf(optarg, "%lf", &delta);
+	        break;
+	    case 'p':
+	        sscanf(optarg, "%s", ph);
+		    break;
+	    case 'h':
+	        sscanf(optarg, "%s", ht);
+		    break;
+	    case 'b':
+	        sscanf(optarg, "%d", &BpFlag);
+		    break;
         default:
             fprintf(stderr, "Usage: %s [-t t1,t2 -d delta -p P] "
 		    "list1 list2\n", argv[0]);
@@ -105,19 +104,20 @@ int main(int argc, char *argv[]){
         exit(1);
     }
 
-	/* find line number of all lists */
-	i=0;
-	for (j = optind; j < argc; j++) {
-		if((fp = fopen(argv[j], "r")) == NULL){
-  		    fprintf(stderr, "open %s failed.\n", argv[j]);
-    	    exit(1);
-  	    }
-  		while(fgets(filen, sizeof(filen), fp) !=NULL){
-    		i++;
-		}
-		fclose(fp);
-	}
-	len=i;
+
+    /* find line number of all lists */
+    i=0;
+    for (j = optind; j < argc; j++) {
+        if((fp = fopen(argv[j], "r")) == NULL){
+            fprintf(stderr, "open %s failed.\n", argv[j]);
+            exit(1);
+        }
+        while(fgets(filen, sizeof(filen), fp) !=NULL){
+            i++;
+        }
+        fclose(fp);
+    }
+    len=i;
 
     /* initialize reference phase */
 	P_flag=(int*)malloc(sizeof(int)*len);
