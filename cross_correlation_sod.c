@@ -162,6 +162,11 @@ int main(int argc, char *argv[]){
     }
 
     /* check valid line number */
+    /* len        : number of all lines
+     * len1       : line number of main list
+     * len_tmp    : valid number of all lines
+     * len1_valid : valid line number of main list
+     */
     len1_valid=&len2;
     //fprintf(stderr,"%d	%d	%d\n",len, len1, *len1_valid);
     //fprintf(stderr,"%s:Read sachead to determine which data are chosen to read\n",argv[optind]);
@@ -550,6 +555,8 @@ double dist(double evla, double evlo, double stla, double stlo)
     return delta;
 }
 
+
+/* check valid line number */
 int rsachead(int *P_flag, char **str, int len, int len1, int *len1_valid, double tk1, double tk2, double delta, char ph[]){
     int i, num, nd, ns, npts, len_valid;
     float b, ts, tt;
@@ -560,7 +567,7 @@ int rsachead(int *P_flag, char **str, int len, int len1, int *len1_valid, double
     for(i=0;i<len;i++){
         //fprintf(stderr,"%s\n",str[i]);
         if((fp = fopen(str[i], "r")) == NULL){
-            fprintf(stderr, "###############haha open %s failed.\n", str[i]);
+            fprintf(stderr, "## open %s failed.\n", str[i]);
             exit(1);
             continue;
         }
@@ -573,10 +580,10 @@ int rsachead(int *P_flag, char **str, int len, int len1, int *len1_valid, double
         npts = hdr.npts;
         b = hdr.b;
         //delta = hdr.delta;
-
         //tt = hdr.t1;
         //fprintf(stderr,"%s\n",ph);
 
+        /* set reference time */
         if(strcmp(ph,"t1")==0){
             tt = hdr.t1;
             //fprintf(stderr,"****%s	%f\n", ph, tt);
@@ -608,6 +615,7 @@ int rsachead(int *P_flag, char **str, int len, int len1, int *len1_valid, double
 
         if(fabs(tt+12345)< 1.e-5){continue;}
 
+        /* find start point and point number */
         ns=0;
         if ( (tk2+tk1)> 0 ) {
             nd=(tk1+tk2+0.00001)/delta;
@@ -624,6 +632,7 @@ int rsachead(int *P_flag, char **str, int len, int len1, int *len1_valid, double
                 nd=(tt+tk2-ts+0.00001)/delta+1;
             }
             //fprintf(stderr,"%d  %d  %d\n",nd,npts,ns);
+
             if (npts < (ns + nd)) {
                 nd=npts-ns;
             }
@@ -638,12 +647,14 @@ int rsachead(int *P_flag, char **str, int len, int len1, int *len1_valid, double
         if(nd < 2 || ts >= tt + tk2){
             //fprintf(stderr,"%d	%f	%f\n%s\n", nd, ts, tt, str[i]);
             continue;
-        }// The time window is not in the time interval of data.
+        } // The time window is not in the time interval of data.
 
         //fprintf(stderr,"%d	%f	%f\n%s\n", nd, ts, tt, str[i]);
         len_valid++;
 
-        if(i < len1){*len1_valid=len_valid;}
+        if (i < len1) {
+            *len1_valid=len_valid;
+        }
         P_flag[i]=1;
     }
 
@@ -651,40 +662,45 @@ int rsachead(int *P_flag, char **str, int len, int len1, int *len1_valid, double
     return len_valid;
 }
 
-int rsacdata(int *P_flag,	char **str, char **str1, float **data, int *nd, double *ts, int *npts, double *b, double delta, double *tt, double *ela, double *elo, double *evdp, double *sla, double *slo, double *gcar, int *len1_valid, int len, int len1, double tk1, double tk2, char ph[], int BpFlag){
 
-	int	i, j, k, num, ns;
-	float *data_tmp;
-  struct sac_head hdr = sac_null;
-	FILE *fp, *fp1;
+/* read sac data */
+int rsacdata(int *P_flag, char **str, char **str1, float **data, int *nd, double *ts, int *npts, double *b, double delta, double *tt, double *ela, double *elo, double *evdp, double *sla, double *slo, double *gcar, int *len1_valid, int len, int len1, double tk1, double tk2, char ph[], int BpFlag){
 
-///////for bandpass
-  double low=0.8, high=2;
-// double low=0.5, high=1;
-//double attenuation=0, transition_bandwidth=0;
-  double attenuation=30, transition_bandwidth=0.3;
-//int nlen;
-  int order=2,passes=1;
-//xapiir(yarray, nlen, SAC_BUTTERWORTH,transition_bandwidth, attenuation,order,SAC_BANDPASS,low, high,delta_d, passes);
-///////
+    int	i, j, k, num, ns;
+    float *data_tmp;
+    struct sac_head hdr = sac_null;
+    FILE *fp, *fp1;
 
-/*	if((fp1 = fopen("filelist", "w")) == NULL){
-    		fprintf(stderr, "****************open failed.\n");
-      	exit(1);
- 	}*/
+    // for bandpass
+    double low=0.8, high=2;
+    //double low=0.5, high=1;
+    //double attenuation=0, transition_bandwidth=0;
+    double attenuation=30, transition_bandwidth=0.3;
+    //int nlen;
+    int order=2,passes=1;
+    //xapiir(yarray,nlen,SAC_BUTTERWORTH,transition_bandwidth,attenuation,order,SAC_BANDPASS,low,high,delta_d,passes);
 
-	k=0;
-	for(i=0;i<len;i++){
-//		fprintf(stderr,"%d	%d\n",P_flag[i], len);
-		if(P_flag[i] == 1){
-			if((fp = fopen(str1[i], "r")) == NULL){
-    			fprintf(stderr, "****************open %s failed.\n", str1[i]);
-      			continue;
-  			}
-			if(fread(&hdr, sizeof(hdr), 1, fp) != 1){
-  				fprintf(stderr, "read failed for header of %s\n",str1[i]);
-				continue;
-			}
+
+    /*if((fp1 = fopen("filelist", "w")) == NULL){
+        fprintf(stderr, "****************open failed.\n");
+        exit(1);
+    }*/
+
+
+    k=0;
+    for(i=0;i<len;i++){
+        //fprintf(stderr,"%d	%d\n",P_flag[i], len);
+        if(P_flag[i] == 1){
+            if((fp = fopen(str1[i], "r")) == NULL){
+                fprintf(stderr, "****************open %s failed.\n", str1[i]);
+                continue;
+            }
+            if(fread(&hdr, sizeof(hdr), 1, fp) != 1){
+                fprintf(stderr, "read failed for header of %s\n",str1[i]);
+                continue;
+            }
+
+
 
 			strcpy(str[k], str1[i]);
 //			fprintf(stderr,"***********###############%s	%s\n",str[k],str1[i]);
