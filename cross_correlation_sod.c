@@ -165,11 +165,10 @@ int main(int argc, char *argv[]){
     /* len        : number of all lines
      * len1       : line number of main list
      * len_tmp    : valid number of all lines
-     * len1_valid : valid line number of main list
-     */
+     * len1_valid : valid line number of main list */
+    //fprintf(stderr,"%s:Read sachead to determine which data are chosen to read\n",argv[optind]);
     len1_valid=&len2;
     //fprintf(stderr,"%d	%d	%d\n",len, len1, *len1_valid);
-    //fprintf(stderr,"%s:Read sachead to determine which data are chosen to read\n",argv[optind]);
     len_tmp=rsachead(P_flag,str1,len,len1,len1_valid,tk1,tk2,delta,ht);
     len1_valid_tmp = *len1_valid;
     //fprintf(stderr,"%d	%d	%d	%d\n",len, len1, *len1_valid, len_tmp);
@@ -201,9 +200,12 @@ int main(int argc, char *argv[]){
     nd=(int*)malloc(sizeof(int)*len_tmp);
 
     /* read sac data */
+    /* len_tmp_valid : valid number of all lines
+     * len1_valid    : valid line number of main list */
     //fprintf(stderr,"%s:Read sacdata\n",argv[optind]);
     len_tmp_valid = rsacdata(P_flag,str,str1,data,nd,ts,npts,b,delta,tt,ela,elo,evdp,sla,slo,gcar,len1_valid,len,len1,tk1,tk2,ht,BpFlag);
 
+    /* free memory */
     free(P_flag);
     for (i=0; i < len; i++) {
         free(str1[i]);
@@ -213,8 +215,8 @@ int main(int argc, char *argv[]){
     /* check valid sacfile number */
     //fprintf(stderr,"len: %d		len_valid: %d\n",len_tmp, len_tmp_valid);
     //fprintf(stderr,"len1_all: %d		len1_valid: %d\n",len1_valid_tmp, *len1_valid);
-    if((len_tmp     != len_tmp_valid) ||
-       (*len1_valid != len1_valid_tmp)){
+    if ((len_tmp_valid != len_tmp) ||
+        (*len1_valid   != len1_valid_tmp)) {
         fprintf(stderr,"**********The valid datalist is not the same.***********\n");
         fprintf(stderr,"******************%d	%d.**************\n", len_tmp, len_tmp_valid);
         exit(1);
@@ -226,6 +228,7 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "Failed to open ccor\n");
         exit(1);
     }
+
 
     /****************************************************
     ****    do cross-correlate in frequency domain   ****
@@ -523,8 +526,8 @@ double lagr(double x, float a[], int n, double x0, double dx)
     return y;
 }
 
-double dist(double evla, double evlo, double stla, double stlo)
-{
+
+double dist(double evla, double evlo, double stla, double stlo) {
     double delta;
     double s1, s2, c1, c2, cd, lon_dist;
 
@@ -549,7 +552,7 @@ double dist(double evla, double evlo, double stla, double stlo)
     c2 = cos(stla);
     cd = cos(lon_dist);
 
-//    delta = acos(c1 * c2 + s1 * s2 * cd) / M_PI * 180.0;
+    //delta = acos(c1 * c2 + s1 * s2 * cd) / M_PI * 180.0;
     delta = acos(c1 * c2 + s1 * s2 * cd);
 
     return delta;
@@ -690,7 +693,7 @@ int rsacdata(int *P_flag, char **str, char **str1, float **data, int *nd, double
     k=0;
     for(i=0;i<len;i++){
         //fprintf(stderr,"%d	%d\n",P_flag[i], len);
-        if(P_flag[i] == 1){
+        if (P_flag[i] == 1) {
             if((fp = fopen(str1[i], "r")) == NULL){
                 fprintf(stderr, "****************open %s failed.\n", str1[i]);
                 continue;
@@ -821,113 +824,127 @@ int rsacdata(int *P_flag, char **str, char **str1, float **data, int *nd, double
 
 /* cross-correlation in frequency domain */
 ccvalue crosscorrelation(int nd, int nd1, float *data, float *data1, double *cc){
-	int k, num, nw, nfft;
-	int imax;
-	double scale, ccmax;
-  double *d, *d1, *dtap;
-  double inv_nfft, pw, pw1, cc0;
-  double complex *fft_in, *fft_out, *fft_out1;
-  fftw_plan pf, pb;
-	ccvalue ccv;
+    int k, num, nw, nfft;
+    int imax;
+    double scale, ccmax;
+    double *d, *d1, *dtap;
+    double inv_nfft, pw, pw1, cc0;
+    double complex *fft_in, *fft_out, *fft_out1;
+    fftw_plan pf, pb;
+    ccvalue ccv;
 
-	if(nd >= nd1) {
-		for(k = 2 * nd, nfft = 1; nfft < k; nfft += nfft);
-	  	nw = nd;
-	}
-	else{
-		for(k = 2 * nd1, nfft = 1; nfft < k; nfft += nfft);
-	  	nw = nd1;
-	}
-	inv_nfft = 1.0 / (double) nfft;
+    /* set parameters for fft */
+    if (nd >= nd1) {
+        for(k = 2 * nd, nfft = 1; nfft < k; nfft += nfft);
+        nw = nd;
+    }
+    else {
+        for(k = 2 * nd1, nfft = 1; nfft < k; nfft += nfft);
+        nw = nd1;
+    }
+    inv_nfft = 1.0 / (double) nfft;
 
-	if((d = malloc(3 * nw * sizeof(*d))) == NULL) {
-  	fprintf(stderr, "allocation failed for d.\n");
-    exit(1);
-  }
-	d1 = d + nw;
-  dtap = d1 + nw;
-  taper_hanning(dtap, nw, 0.05);
+    /* set data and filter arrays */
+    if((d = malloc(3 * nw * sizeof(*d))) == NULL) {
+        fprintf(stderr, "allocation failed for d.\n");
+        exit(1);
+    }
+    d1 = d + nw;     // second sac data
+    dtap = d1 + nw;  // hanning window
+    taper_hanning(dtap, nw, 0.05);
 
-//for (k = ns, num = 0; k < npts[i], num < nd; k++){
-  for ( num = 0; num < nd; num++){
-//	d[num] = data[k] * dtap[num];
-		d[num] = data[num] * dtap[num];
-//  num++;
-  }
+    /* data operation before fft */
+    //for (k = ns, num = 0; k < npts[i], num < nd; k++){
+    for ( num = 0; num < nd; num++) {
+        //d[num] = data[k] * dtap[num];
+        d[num] = data[num] * dtap[num];
+        // num++;
+    }
+    for (pw = 0.0, num = 0; num < nd; num++) {
+        pw += d[num] * d[num];
+        //fprintf(stderr,"%f	%f\n",pw,d[num]*d[num]);
+    }
 
-	for (pw = 0.0, num = 0; num < nd; num++)
-	{
-  	pw += d[num] * d[num];
-//		fprintf(stderr,"%f	%f\n",pw,d[num]*d[num]);
-  }
-//for (k = ns1, num = 0; k < npts1[j], num < nd1; k++) {
-	for (num = 0; num < nd1; num++) {
-//	d1[num] = data1[k] * dtap[num];
-		d1[num] = data1[num] * dtap[num];
-//	num++;
-	}
+    //for (k = ns1, num = 0; k < npts1[j], num < nd1; k++) {
+    for (num = 0; num < nd1; num++) {
+        //d1[num] = data1[k] * dtap[num];
+        d1[num] = data1[num] * dtap[num];
+        //num++;
+    }
+    for(pw1 = 0.0, num = 0; num < nd1; num++) {
+        pw1 += d1[num] * d1[num];
+    }
 
-	for(pw1 = 0.0, num = 0; num < nd1; num++)
-		pw1 += d1[num] * d1[num];
+    /* normalization factor */
+    scale = 1.0 / sqrt(pw * pw1);
+    //fprintf(stderr,"%d %f %f %20.18f\n",nw,pw,pw1,scale);
 
-	scale = 1.0 / sqrt(pw * pw1);
-//	fprintf(stderr,"%d %f %f %20.18f\n",nw,pw,pw1,scale);
 
-	if((fft_in = malloc(3 * nfft * sizeof(*fft_in))) == NULL){
-		fprintf(stderr, "allocation failed for fft_in\n");
-		exit(1);
-	}
+    /* do cross-correlation in frequency domain */
+    if((fft_in = malloc(3 * nfft * sizeof(*fft_in))) == NULL){
+        fprintf(stderr, "allocation failed for fft_in\n");
+        exit(1);
+    }
 
-	fft_out = fft_in + nfft;
-	fft_out1 = fft_out + nfft;
-	pf = fftw_plan_dft_1d(nfft, fft_in, fft_out, FFTW_FORWARD,FFTW_ESTIMATE);
-	pb = fftw_plan_dft_1d(nfft, fft_in, fft_out1, FFTW_BACKWARD,FFTW_ESTIMATE);
+    fft_out = fft_in + nfft;
+    fft_out1 = fft_out + nfft;
+    pf = fftw_plan_dft_1d(nfft, fft_in, fft_out, FFTW_FORWARD,FFTW_ESTIMATE);
+    pb = fftw_plan_dft_1d(nfft, fft_in, fft_out1, FFTW_BACKWARD,FFTW_ESTIMATE);
 
-	for (k = 0; k < nfft; k++)
-		if(k < nd)
-			fft_in[k] = d[k];
-		else
-			fft_in[k] = 0.0;
-	fftw_execute_dft(pf, fft_in, fft_out);
-  for (k = 0; k < nfft; k++)
-    if (k < nd1)
-    	fft_in[k] = d1[k];
-    else
-      fft_in[k] = 0.0;
-	fftw_execute_dft(pf, fft_in, fft_out1);
-	for (k = 0; k < nfft; k++)
-		fft_out[k] *= conj(fft_out1[k]) * inv_nfft;
-	fftw_execute_dft(pb, fft_out, fft_in);
-  fftw_destroy_plan(pf);
-  fftw_destroy_plan(pb);
+    for (k = 0; k < nfft; k++) {
+        if(k < nd)
+            fft_in[k] = d[k];
+        else
+            fft_in[k] = 0.0;
+    }
+    fftw_execute_dft(pf, fft_in, fft_out);
 
-	imax = 0;
-	ccmax = creal(fft_in[0]);
-	cc0 = fabs(ccmax);
-	for (num = 0, k = nd-1; num < nd; num++){
-		cc[k] = creal(fft_in[num]);
-	  if (fabs(cc[k]) > cc0){
-			imax = num;
-	  	cc0 = fabs(cc[k]);
-	  	ccmax = cc[k];
-	  }
-	  k--;
-	}
+    for (k = 0; k < nfft; k++) {
+        if (k < nd1)
+            fft_in[k] = d1[k];
+        else
+            fft_in[k] = 0.0;
+    }
+    fftw_execute_dft(pf, fft_in, fft_out1);
 
-	for (num = 1, k = nd; num < nd1 ; num++) {
-		cc[k] = creal(fft_in[nfft - num]);
-		if (fabs(cc[k]) > cc0) {
-			imax = -num;
-			cc0 = fabs(cc[k]);
-		  ccmax = cc[k];
-	  }
-	  k++;
-  }
-	free(d);free(fft_in);
-	ccv.imax=imax;
-	ccv.scale=scale;
-	ccv.ccmax=ccmax;
-	return ccv;
+    for (k = 0; k < nfft; k++) {
+        fft_out[k] *= conj(fft_out1[k]) * inv_nfft;
+    }
+    fftw_execute_dft(pb, fft_out, fft_in);
+    fftw_destroy_plan(pf);
+    fftw_destroy_plan(pb);
+
+
+    /* find cross-corrleation function */
+    imax = 0;
+    ccmax = creal(fft_in[0]);
+    cc0 = fabs(ccmax);
+    for (num = 0, k = nd-1; num < nd; num++) {
+        cc[k] = creal(fft_in[num]);
+        if (fabs(cc[k]) > cc0){
+            imax = num;
+            cc0 = fabs(cc[k]);
+            ccmax = cc[k];
+        }
+        k--;
+    }
+    for (num = 1, k = nd; num < nd1 ; num++) {
+        cc[k] = creal(fft_in[nfft - num]);
+        if (fabs(cc[k]) > cc0) {
+            imax = -num;
+            cc0 = fabs(cc[k]);
+            ccmax = cc[k];
+        }
+        k++;
+    }
+    free(d);free(fft_in);
+
+    /* find maximum cross-correlation coefficient */
+    ccv.scale=scale;
+    ccv.imax=imax;
+    ccv.ccmax=ccmax;
+
+    return ccv;
 }
 
 
