@@ -305,91 +305,102 @@ int main(int argc, char *argv[]){
 
 
 
-	 		//if(edist <= 60 && delta_date >= 3000 && (strcmp(knetwk,knetwk1)==0) && (strcmp(kstnm,kstnm1)==0)){ //The two earthquakes must be close between hypocenter and far from origin time.
-	 		//if(edist <= 60 && delta_date > 0 && (strcmp(knetwk,knetwk1)==0) && (strcmp(kstnm,kstnm1)==0)){
+            //if(edist <= 60 && delta_date >= 3000 && (strcmp(knetwk,knetwk1)==0) && (strcmp(kstnm,kstnm1)==0)){ //The two earthquakes must be close between hypocenter and far from origin time.
+            //if(edist <= 60 && delta_date > 0 && (strcmp(knetwk,knetwk1)==0) && (strcmp(kstnm,kstnm1)==0)){
 
-			/*relocation*/
-	 		//if(edist <= 60 && delta_date > 0){
-			/*calculate ccf*/
-	 		if(1){
+            /*relocation*/
+            //if(edist <= 60 && delta_date > 0){
 
- //   		fprintf(stderr, "cross correlation %s %s	%f\n",kdate,kdate1,edist);
-		    	if ((cc = malloc((nd[i] + nd[j] - 1) * sizeof(*cc))) == NULL) {
-      				fprintf(stderr, "allocation failed for data, npts\n");
-			        continue;
-      			}
-	    		if((ccf = malloc((nd[i] + nd[j] - 1) * sizeof(*ccf))) == NULL) {
-      			fprintf(stderr, "allocation failed for data, npts\n");
-        		continue;
-      			}
-				ccv=crosscorrelation(nd[i], nd[j], data[i], data[j], cc);
-//				ccmax=ccv.ccmax;imax=ccv.imax;scale=ccv.scale;
-//				fprintf(stderr,"%20.18f\n",delta;
+            /*calculate ccf*/
+            if(1){
+                //fprintf(stderr, "cross correlation %s %s	%f\n",kdate,kdate1,edist);
+                if ((cc = malloc((nd[i] + nd[j] - 1) * sizeof(*cc))) == NULL) {
+                    fprintf(stderr, "allocation failed for data, npts\n");
+                    continue;
+                }
+                if((ccf = malloc((nd[i] + nd[j] - 1) * sizeof(*ccf))) == NULL) {
+                    fprintf(stderr, "allocation failed for data, npts\n");
+                    continue;
+                }
 
-	    		if ((fabs(ccv.ccmax*ccv.scale)) > 0.0) {
-//					fprintf(fcr,"%s  %s  %f  %f  %f  %f  %f  %f  %f  %f  %f  %f  %f\n",str[i], str[j],ccv.ccmax * ccv.scale, -(ccv.imax * delta+b[i]-b[j]), edist, sla[i], slo[i], gcar[i], gcar[j],ela[i], elo[i], ela[j], elo[j]);
-//					fprintf(fcr,"%s  %s  %f  %f  %f\n",str[i], str[j],ccv.ccmax*ccv.scale, -(ccv.imax * delta + ts[i]-ts[j]), edist);
-					fprintf(fcr,"%s  %s  %f  %f\n",str[i], str[j],ccv.ccmax*ccv.scale, -(ccv.imax * delta + ts[i]-ts[j]));
-//					fprintf(fcr,"%f  %f  %f  %f  %f  %f  %f  %f  %f  %f  %f\n",ccv.ccmax*ccv.scale, -(ccv.imax * delta + ts[i]-ts[j]), edist, sla[i], slo[i], gcar[i], gcar[j],ela[i], elo[i], ela[j], elo[j]);
-//					fprintf(fcr,"%s  %s  %f  %f  %f %f %f\n",str[i], str[j],ccv.ccmax*ccv.scale, -ccv.imax * delta, -(ts[i]-ts[j]), -(ccv.imax * delta + ts[i]-ts[j]), edist);
-//					fprintf(fcr,"%s  %s  %f  %f  %f %f\n",str[i], str[j],ccv.ccmax*ccv.scale, -ccv.imax * delta, -(ts[i]-ts[j]), edist);
-	    		}
+                ccv=crosscorrelation(nd[i], nd[j], data[i], data[j], cc);
 
-	  //		if (((fabs(ccv.ccmax * ccv.scale)) > 1.0) && ((fabs(ccv.imax * delta)) < 20)) {
-/*	    		if ((fabs(ccv.ccmax * ccv.scale)) >= 0.8) {
-//	    			snprintf(fcrr_sac, 256,"/home/yaojy/Test/%s.%s.%s.%s.%s.%s.cr.SAC", knetwk, kstnm,kloc,kloc1, kdate, kdate1);
-//	    			snprintf(fcrr_sac, 256,"/public/home/yaojy/doublet_search/CC/%s.%s.%s.%s.%s.%s.cr.SAC", knetwk, kstnm,kloc,kloc1, kdate, kdate1);
-  	  				if ((fp = fopen(fcrr_sac, "w")) == NULL) {
-						fprintf(stderr, "Failed to open %s\n", fcrr_sac);
-	      				exit(1);
-	    			}
-	    			for(k = 0; k < (nd[i] + nd[j]) - 1; k++)
-	    				ccf[k] = cc[k] * ccv.scale;
+                //ccmax=ccv.ccmax; imax=ccv.imax; scale=ccv.scale;
+                //fprintf(stderr,"%20.18f\n",delta;
 
-		      		hdr.t1 = -12345.;
-					hdr.nzyear = -12345;
-					hdr.nzjday = -12345;
-					hdr.nzhour = -12345;
-					hdr.nzmin = -12345;
-					hdr.nzsec = -12345;
-					hdr.nzmsec = -12345;
-					hdr.stla = sla[i];
-					hdr.stlo = slo[i];
-					strncpy(hdr.kstnm, kstnm, 8);
-					strncpy(hdr.knetwk, knetwk, 8);
+                if ((fabs(ccv.ccmax*ccv.scale)) > 0.0) {
+					fprintf(fcr,"%s  %s  %f  %f\n",str[i], str[j],ccv.ccmax*ccv.scale, -(ccv.imax*delta+ts[i]-ts[j]));
+                    //fprintf(fcr,"%s  %s  %f  %f  %f  %f  %f  %f  %f  %f  %f  %f  %f\n",str[i],str[j],ccv.ccmax*ccv.scale,-(ccv.imax*delta+b[i]-b[j]),edist,sla[i],slo[i],gcar[i],gcar[j],ela[i],elo[i],ela[j],elo[j]);
+                    //fprintf(fcr,"%s  %s  %f  %f  %f\n",str[i], str[j],ccv.ccmax*ccv.scale,-(ccv.imax*delta+ts[i]-ts[j]),edist);
+                    //fprintf(fcr,"%f  %f  %f  %f  %f  %f  %f  %f  %f  %f  %f\n",ccv.ccmax*ccv.scale,-(ccv.imax*delta+ts[i]-ts[j]),edist,sla[i],slo[i],gcar[i],gcar[j],ela[i],elo[i],ela[j],elo[j]);
+                    //fprintf(fcr,"%s  %s  %f  %f  %f %f %f\n",str[i], str[j],ccv.ccmax*ccv.scale,-ccv.imax*delta,-(ts[i]-ts[j]),-(ccv.imax*delta+ts[i]-ts[j]),edist);
+                    //fprintf(fcr,"%s  %s  %f  %f  %f %f\n",str[i],str[j],ccv.ccmax*ccv.scale,-ccv.imax*delta,-(ts[i]-ts[j]),edist);
+                }
 
-					if ((tk1 + tk2) > 0)
-	    		    	hdr.b = (-nd[i] + 1) * delta + (ts[j] - ts[i]);
-					else
-	     		    	hdr.b = (-nd[i] + 1) * delta + (b[j] - b[i]);
-		        	hdr.npts = nd[i] + nd[j] - 1;
-		        	hdr.e = hdr.b + (hdr.npts - 1) * delta;
-		        	hdr.o = 0.0;
-		        	fwrite(&hdr, sizeof(hdr), 1, fp);
-		        	fwrite(ccf, sizeof(*ccf), nd[i] + nd[j] - 1, fp);
-		        	fclose(fp);
-		    	}*/
-    	 		free(cc);
-		    	free(ccf);
-	  		}
-		}
-		free(str[i]);
-  		free(data[i]);
-	}
+                //if (((fabs(ccv.ccmax * ccv.scale)) > 1.0) && ((fabs(ccv.imax * delta)) < 20)) {
+                /*if ((fabs(ccv.ccmax * ccv.scale)) >= 0.8) {
+                    //snprintf(fcrr_sac, 256,"/home/yaojy/Test/%s.%s.%s.%s.%s.%s.cr.SAC", knetwk, kstnm,kloc,kloc1, kdate, kdate1);
+                    //snprintf(fcrr_sac, 256,"/public/home/yaojy/doublet_search/CC/%s.%s.%s.%s.%s.%s.cr.SAC", knetwk, kstnm,kloc,kloc1, kdate, kdate1);
+                    if ((fp = fopen(fcrr_sac, "w")) == NULL) {
+                        fprintf(stderr, "Failed to open %s\n", fcrr_sac);
+                        exit(1);
+                    }
 
-	for(i = *len1_valid;i < len_tmp; i++){
-		free(str[i]);free(data[i]);
-	}
-	free(str);free(data);
-	free(ts);free(nd);
-	free(npts);free(b);free(tt);
-//	free(delta);
-	free(sla);free(slo);free(ela);free(elo);free(gcar);free(evdp);
-	fclose(fcr);
+                    for(k = 0; k < (nd[i] + nd[j]) - 1; k++)
+                        ccf[k] = cc[k] * ccv.scale;
+
+                    hdr.t1 = -12345.;
+                    hdr.nzyear = -12345;
+                    hdr.nzjday = -12345;
+                    hdr.nzhour = -12345;
+                    hdr.nzmin = -12345;
+                    hdr.nzsec = -12345;
+                    hdr.nzmsec = -12345;
+                    hdr.stla = sla[i];
+                    hdr.stlo = slo[i];
+                    strncpy(hdr.kstnm, kstnm, 8);
+                    strncpy(hdr.knetwk, knetwk, 8);
+
+                    if ((tk1 + tk2) > 0)
+                        hdr.b = (-nd[i] + 1) * delta + (ts[j] - ts[i]);
+                    else
+                        hdr.b = (-nd[i] + 1) * delta + (b[j] - b[i]);
+                    hdr.npts = nd[i] + nd[j] - 1;
+                    hdr.e = hdr.b + (hdr.npts - 1) * delta;
+                    hdr.o = 0.0;
+                    fwrite(&hdr, sizeof(hdr), 1, fp);
+                    fwrite(ccf, sizeof(*ccf), nd[i] + nd[j] - 1, fp);
+                    fclose(fp);
+                }*/
+
+                free(cc);
+                free(ccf);
+            } /* if */
+
+        } /* for j */
+
+        free(str[i]);
+        free(data[i]);
+    } /* for i */
+
+    /* free memory */
+    for(i = *len1_valid;i < len_tmp; i++){
+        free(str[i]);free(data[i]);
+    }
+    free(str);free(data);
+    free(ts);free(nd);
+    free(npts);free(b);free(tt);
+    //free(delta);
+    free(sla);free(slo);free(ela);free(elo);free(gcar);free(evdp);
+    fclose(fcr);
 
 }
 
 
+
+/*************
+ * functions
+ *************/
 double htoe(int year, int mon, int day, int hour, int min, double sec)
 {
     double e;
