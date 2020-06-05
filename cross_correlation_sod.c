@@ -81,8 +81,8 @@ int main(int argc, char *argv[]){
             sscanf(optarg, "%lf,%lf", &tk1, &tk2);
             break;
         case 'd':
-	        sscanf(optarg, "%lf", &delta);
-	        break;
+            sscanf(optarg, "%lf", &delta);
+            break;
 	    case 'p':
 	        sscanf(optarg, "%s", ph);
             break;
@@ -230,7 +230,7 @@ int main(int argc, char *argv[]){
 	for(i = 0; i < *len1_valid; i++){
 		//fprintf(stderr,"%s\n", str[i]);
 
-		
+
 		cp = strrchr(str[i], '/');
     	if (cp == NULL) {
     		cp = str[i];
