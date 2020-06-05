@@ -80,18 +80,18 @@ int main(int argc, char *argv[]){
         case 't':
             sscanf(optarg, "%lf,%lf", &tk1, &tk2);
             break;
-	    case 'd':
+        case 'd':
 	        sscanf(optarg, "%lf", &delta);
 	        break;
 	    case 'p':
 	        sscanf(optarg, "%s", ph);
-		    break;
+            break;
 	    case 'h':
 	        sscanf(optarg, "%s", ht);
-		    break;
+            break;
 	    case 'b':
 	        sscanf(optarg, "%d", &BpFlag);
-		    break;
+            break;
         default:
             fprintf(stderr, "Usage: %s [-t t1,t2 -d delta -p P] "
 		    "list1 list2\n", argv[0]);
@@ -120,46 +120,46 @@ int main(int argc, char *argv[]){
     len=i;
 
     /* initialize reference phase */
-	P_flag=(int*)malloc(sizeof(int)*len);
-	for(i=0;i<len;i++){
-		P_flag[i]=0;
-	}
+    P_flag=(int*)malloc(sizeof(int)*len);
+    for(i=0;i<len;i++){
+        P_flag[i]=0;
+    }
 
-	/* set sacfile lists */
-	str1=(char**)malloc(sizeof(char*)*len);
-	for(i=0;i<len;i++){
-		str1[i]=(char*)malloc(sizeof(char)*FL);
-	}
+    /* set sacfile lists */
+    str1=(char**)malloc(sizeof(char*)*len);
+    for(i=0;i<len;i++){
+        str1[i]=(char*)malloc(sizeof(char)*FL);
+    }
 
-	/* read main list */
-	i = 0;
-	if((fp = fopen(argv[optind], "r")) == NULL){
-  		fprintf(stderr, "open %s failed.\n", argv[optind]);
-    	exit(1);
-  	}
-  	while(fgets(filen, sizeof(filen), fp) !=NULL){
-		filen[strlen(filen)-1] = '\0';
-  	  	strcpy(str1[i], filen);
-		//printf("%s\n", str1[i]);
-    	i++;
-	}
-	fclose(fp);
-	len1=i;
+    /* read main list */
+    i = 0;
+    if((fp = fopen(argv[optind], "r")) == NULL){
+        fprintf(stderr, "open %s failed.\n", argv[optind]);
+        exit(1);
+    }
+    while(fgets(filen, sizeof(filen), fp) !=NULL){
+        filen[strlen(filen)-1] = '\0';
+        strcpy(str1[i], filen);
+        //printf("%s\n", str1[i]);
+        i++;
+    }
+    fclose(fp);
+    len1=i;
 
 	/* read following list */
-	for(j = optind+1; j < argc; j++){
-		if((fp = fopen(argv[j], "r")) == NULL){
-  			fprintf(stderr, "open %s failed.\n", argv[j]);
-    		exit(1);
-  		}
-  		while(fgets(filen, sizeof(filen), fp) !=NULL){
-			filen[strlen(filen)-1] = '\0';
-    		strcpy(str1[i], filen);
-			//printf("%s\n", str1[i]);
-    		i++;
-		}
-		fclose(fp);
-	}
+    for(j = optind+1; j < argc; j++){
+        if((fp = fopen(argv[j], "r")) == NULL){
+            fprintf(stderr, "open %s failed.\n", argv[j]);
+            exit(1);
+        }
+        while(fgets(filen, sizeof(filen), fp) !=NULL){
+            filen[strlen(filen)-1] = '\0';
+            strcpy(str1[i], filen);
+            //printf("%s\n", str1[i]);
+            i++;
+        }
+        fclose(fp);
+    }
 
     /* check valid line number */
 	len1_valid=&len2;
