@@ -230,6 +230,7 @@ int main(int argc, char *argv[]){
 	for(i = 0; i < *len1_valid; i++){
 		//fprintf(stderr,"%s\n", str[i]);
 
+		
 		cp = strrchr(str[i], '/');
     	if (cp == NULL) {
     		cp = str[i];
