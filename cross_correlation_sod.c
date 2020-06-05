@@ -669,7 +669,8 @@ int rsacdata(int *P_flag, char **str, char **str1, float **data, int *nd, double
     int	i, j, k, num, ns;
     float *data_tmp;
     struct sac_head hdr = sac_null;
-    FILE *fp, *fp1;
+    FILE *fp;
+    //FILE *fp1;
 
     // for bandpass
     double low=0.8, high=2;
@@ -694,6 +695,7 @@ int rsacdata(int *P_flag, char **str, char **str1, float **data, int *nd, double
                 fprintf(stderr, "****************open %s failed.\n", str1[i]);
                 continue;
             }
+
             if(fread(&hdr, sizeof(hdr), 1, fp) != 1){
                 fprintf(stderr, "read failed for header of %s\n",str1[i]);
                 continue;
@@ -702,6 +704,8 @@ int rsacdata(int *P_flag, char **str, char **str1, float **data, int *nd, double
             strcpy(str[k], str1[i]);
             //fprintf(stderr,"***********###############%s	%s\n",str[k],str1[i]);
             //fprintf(fp1,"%s\n",str[k]);
+
+            /* read SAC headers */
             npts[k] = hdr.npts;
             b[k] = hdr.b;
             //delta[k] = hdr.delta;
@@ -715,91 +719,103 @@ int rsacdata(int *P_flag, char **str, char **str1, float **data, int *nd, double
             evdp[k] = hdr.evdp / 1000.0; // the unit is meter
             //fprintf(stderr,"%s\n",ph);
 
+            /* set reference time */
             if(strcmp(ph,"t1")==0){
                 tt[k] = hdr.t1;
             }else if(strcmp(ph,"t2")==0){
 	            tt[k] = hdr.t2;
-		}else if(strcmp(ph,"t3")==0){
-			tt[k] = hdr.t3;
-		}else if(strcmp(ph,"t4")==0){
-			tt[k] = hdr.t4;
-		}else if(strcmp(ph,"t5")==0){
-			tt[k] = hdr.t5;
-		}else if(strcmp(ph,"t6")==0){
-			tt[k] = hdr.t6;
-		}else if(strcmp(ph,"t7")==0){
-//			tt[k] = hdr.t6;
-			tt[k] = hdr.t7;
-		}else if(strcmp(ph,"t8")==0){
-			tt[k] = hdr.t8;
-		}else if(strcmp(ph,"t9")==0){
-			tt[k] = hdr.t9;
-		}else if(strcmp(ph,"t0")==0){
-			tt[k] = hdr.t0;
-		}else {
-			tt[k] = hdr.o;
-		}
+            }else if(strcmp(ph,"t3")==0){
+                tt[k] = hdr.t3;
+            }else if(strcmp(ph,"t4")==0){
+                tt[k] = hdr.t4;
+            }else if(strcmp(ph,"t5")==0){
+                tt[k] = hdr.t5;
+            }else if(strcmp(ph,"t6")==0){
+                tt[k] = hdr.t6;
+            }else if(strcmp(ph,"t7")==0){
+                //tt[k] = hdr.t6;
+                tt[k] = hdr.t7;
+            }else if(strcmp(ph,"t8")==0){
+                tt[k] = hdr.t8;
+            }else if(strcmp(ph,"t9")==0){
+                tt[k] = hdr.t9;
+            }else if(strcmp(ph,"t0")==0){
+                tt[k] = hdr.t0;
+            }else {
+                tt[k] = hdr.o;
+            }
 
-			if(fabs(tt[k]+12345)< 1.e-5){continue;}
-			ns=0;
+            if(fabs(tt[k]+12345)< 1.e-5){continue;}
 
-			if((tk2+tk1)>0) {
-    			nd[k]=(tk1+tk2+0.00001)/delta;
-    			for(num = 0; num < npts[k]; num++){
-    				ts[k]=b[k]+num*delta;
-      				if(ts[k] < (tt[k] - tk1))
-						ns++;
-      				else
-      					break;
-    			}
-    			if(num == 0) {
-    	  			nd[k]=(tt[k]+tk2-ts[k]+0.00001)/delta+1;
-    			}
-	  			if(npts[k] < (ns + nd[k]))
-    				nd[k]=npts[k]-ns;
-			} else {
-    			nd[k] = npts[k];
-				ts[k]=b[k];
-			}
-			if(nd[k] < 2 || ts[k] >= tt[k] + tk2){continue;}
+            /* find start point and point number */
+            ns=0;
+            if ((tk2+tk1)>0) {
+                nd[k]=(tk1+tk2+0.00001)/delta;
 
-			if((data_tmp = (float*)malloc(npts[k] * sizeof(float))) == NULL){
-    			fprintf(stderr, "allocation failed for data %d.\n",i);
-      			continue;
-    		}
-			if(fread(data_tmp, sizeof(float), npts[k], fp) != npts[k]){
-    			fprintf(stderr, "read failed for data of %s\n",str1[i]);
-    	  		continue;
-    		}
+                for(num = 0; num < npts[k]; num++){
+                    ts[k]=b[k]+num*delta;
+                    if(ts[k] < (tt[k] - tk1))
+                        ns++;
+                    else
+                        break;
+                }
 
-			if ( BpFlag == 1 ) {	// do the bandpass
-	    		xapiir(data_tmp, npts[k], SAC_BUTTERWORTH,transition_bandwidth, attenuation,order,SAC_BANDPASS,low, high,delta, passes);
-			}
+                if(num == 0) {
+                    nd[k]=(tt[k]+tk2-ts[k]+0.00001)/delta+1;
+                }
 
-			if((data[k] = (float*)malloc(nd[k]*sizeof(float))) == NULL){
-    			fprintf(stderr, "Allocation failed for data %d.\n",i);
-    	  		continue;
-    		}
-			for(j=0;j<nd[k];j++){
-				data[k][j]=data_tmp[ns+j];
-			}
+                if(npts[k] < (ns + nd[k])) {
+                    nd[k]=npts[k]-ns;
+                }
+            } else {
+                nd[k] = npts[k];
+                ts[k]=b[k];
+            }
 
+            if (nd[k] < 2 || ts[k] >= tt[k] + tk2) {
+                continue;
+            }
 
-			k++;
-			if(i < len1){*len1_valid = k;}
+            /* read data */
+            if((data_tmp = (float*)malloc(npts[k] * sizeof(float))) == NULL){
+                fprintf(stderr, "allocation failed for data %d.\n",i);
+                continue;
+            }
+            if(fread(data_tmp, sizeof(float), npts[k], fp) != npts[k]){
+                fprintf(stderr, "read failed for data of %s\n",str1[i]);
+                continue;
+            }
 
+            /* bandpass filter */
+            if (BpFlag == 1) {
+                xapiir(data_tmp, npts[k], SAC_BUTTERWORTH,transition_bandwidth, attenuation,order,SAC_BANDPASS,low, high,delta, passes);
+            }
 
-			free(data_tmp);
-			fclose(fp);
+            /* cut the data within the time window */
+            if((data[k] = (float*)malloc(nd[k]*sizeof(float))) == NULL){
+                fprintf(stderr, "Allocation failed for data %d.\n",i);
+                continue;
+            }
+            for(j=0;j<nd[k];j++){
+                data[k][j]=data_tmp[ns+j];
+            }
 
-		}
-//	  	fprintf(stderr,"The master event:%d	%d\n",i,k);
-//		free(str1[i]);
-	}
-//	fclose(fp1);
-//	fprintf(stderr,"%d	%d	%d\n", k,i-1, len);
-	return k;
+            /* valid number of sac data */
+            k++;
+            if(i < len1) {
+                *len1_valid = k;
+            }
 
+            free(data_tmp);
+            fclose(fp);
+        }
+        //fprintf(stderr,"The master event:%d	%d\n",i,k);
+        //free(str1[i]);
+    }
+
+    //fclose(fp1);
+    //fprintf(stderr,"%d	%d	%d\n", k,i-1, len);
+    return k;
 }
 
 
