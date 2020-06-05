@@ -208,16 +208,16 @@ int main(int argc, char *argv[]){
     /* check valid sacfile number */
     //fprintf(stderr,"len: %d		len_valid: %d\n",len_tmp, len_tmp_valid);
     //fprintf(stderr,"len1_all: %d		len1_valid: %d\n",len1_valid_tmp, *len1_valid);
-	if((len_tmp     != len_tmp_valid) ||
-	   (*len1_valid != len1_valid_tmp)){
-		fprintf(stderr,"**********The valid datalist is not the same.***********\n");
-		fprintf(stderr,"******************%d	%d.**************\n", len_tmp, len_tmp_valid);
-		exit(1);
-	}
+    if((len_tmp     != len_tmp_valid) ||
+       (*len1_valid != len1_valid_tmp)){
+        fprintf(stderr,"**********The valid datalist is not the same.***********\n");
+        fprintf(stderr,"******************%d	%d.**************\n", len_tmp, len_tmp_valid);
+        exit(1);
+    }
 
     /* output file name */
-	snprintf(ccfname, 256, "%s.%s.ccor", argv[optind],ph);
- 	if ((fcr = fopen(ccfname, "w")) == NULL) {
+    snprintf(ccfname, 256, "%s.%s.ccor", argv[optind],ph);
+    if ((fcr = fopen(ccfname, "w")) == NULL) {
         fprintf(stderr, "Failed to open ccor\n");
         exit(1);
     }
@@ -225,80 +225,85 @@ int main(int argc, char *argv[]){
     /****************************************************
     ****    do cross-correlate in frequency domain   ****
     ****************************************************/
-	//fprintf(stderr,"cross-correlate\n");
+    //fprintf(stderr,"cross-correlate\n");
     //for(i = 0; i < len_tmp; i++){
-	for(i = 0; i < *len1_valid; i++){
-		//fprintf(stderr,"%s\n", str[i]);
+    for(i = 0; i < *len1_valid; i++){
+        //fprintf(stderr,"%s\n", str[i]);
 
-		cp = strrchr(str[i], '/');
-    	if (cp == NULL) {
-    		cp = str[i];
+        cp = strrchr(str[i], '/');
+        if (cp == NULL) {
+            cp = str[i];
         }
-    	else {
-		    cp++;
+        else {
+            cp++;
         }
 
         /* get network, station, location etc. */
         /* you may change them for you directory structure and file name */
         //sscanf(cp, "%[^.].%[^.].%[^.].%[^.].%[^.]", knetwk, kstnm, kloc,kcmp, kdate);
         //sscanf(cp, "%[^.].%[^.].%[^.].%[^.].", kdate, knetwk, kstnm,kloc);
-		sscanf(cp, "%[^.].%[^.].%[^.].", knetwk, kstnm, kloc);
-		Getname(str[i], kdate);
-		//fprintf(stderr,"%s %s %s %s\n", kdate, knetwk, kstnm, kloc);
+        sscanf(cp, "%[^.].%[^.].%[^.].", knetwk, kstnm, kloc);
+        Getname(str[i], kdate);
+        //fprintf(stderr,"%s %s %s %s\n", kdate, knetwk, kstnm, kloc);
 
-		strcpy(cp_tmp,cp);
-		split_cp=strtok(cp_tmp,delims);
-		i_tmp=0;
-		while(split_cp!=NULL){
+        strcpy(cp_tmp,cp);
+        split_cp=strtok(cp_tmp,delims);
+        i_tmp=0;
+        while(split_cp!=NULL){
             //if(strcmp(split_cp,"BHZ")==0 && i_tmp==4){
             if(strcmp(split_cp,"BHZ") == 0 && i_tmp==2){
                 strcpy(kloc,"");
                 //fprintf(stderr,"############%s\n",split_cp);
-			}
-			i_tmp++;
-			split_cp=strtok(NULL,delims);
-		}
+            }
+            i_tmp++;
+            split_cp=strtok(NULL,delims);
+        }
 
-		//fprintf(stderr, "cross correlation %d	%d %s\n",i,len_tmp, kdate);
+        //fprintf(stderr, "cross correlation %d	%d %s\n",i,len_tmp, kdate);
 
-		//for(j = i+1;j < len_tmp; j++){
-		for(j = i+1;j < len_tmp_valid; j++){
-//	  		edist = dist(ela[i], elo[i], ela[j], elo[j]);
-//			fprintf(stderr,"edist is %f\n",edist);
-	  		edist = (REARTH-evdp[i])*(REARTH-evdp[i])+(REARTH-evdp[j])*(REARTH-evdp[j])-2*(REARTH-evdp[i])*(REARTH-evdp[j])*cos(dist(ela[i], elo[i], ela[j], elo[j]));
-			edist= sqrt(edist);
-		//	fprintf(stderr,"%s\n", str[j]);
-//			fprintf(stderr,"edist is %f\n",edist);
-//			fprintf(stderr,"edist is %f	%f\n",evdp[i], evdp[j]);
-		  	cp = strrchr(str[j], '/');
-    		if (cp == NULL)
-    			cp = str[j];
-    		else
-		    	cp++;
-//			sscanf(cp, "%[^.].%[^.].%[^.].%[^.].%[^.]", knetwk1, kstnm1, kloc1,kcmp1, kdate1);
+        //for(j = i+1;j < len_tmp; j++){
+        for(j = i+1;j < len_tmp_valid; j++){
+            //edist = dist(ela[i], elo[i], ela[j], elo[j]);
+            //fprintf(stderr,"edist is %f\n",edist);
+            edist = (REARTH-evdp[i])*(REARTH-evdp[i])+(REARTH-evdp[j])*(REARTH-evdp[j])-2*(REARTH-evdp[i])*(REARTH-evdp[j])*cos(dist(ela[i], elo[i], ela[j], elo[j]));
+            edist= sqrt(edist);
+            //fprintf(stderr,"%s\n", str[j]);
+            //fprintf(stderr,"edist is %f\n",edist);
+            //fprintf(stderr,"edist is %f	%f\n",evdp[i], evdp[j]);
 
-			sscanf(cp, "%[^.].%[^.].%[^.].", knetwk1, kstnm1, kloc1);
-			Getname(str[j], kdate1);
-//		  	sscanf(cp, "%[^.].%[^.].%[^.].%[^.].", kdate1, knetwk1, kstnm1,kloc1);
+            cp = strrchr(str[j], '/');
+            if (cp == NULL) {
+                cp = str[j];
+            }
+            else {
+                cp++;
+            }
 
-			strcpy(cp_tmp,cp);
-  		//	fprintf(stderr,"%s\n",cp_tmp);
-  			split_cp=strtok(cp_tmp,delims);
-  			i_tmp=0;
-  			while(split_cp!=NULL){
-    			//if(strcmp(split_cp,"BHZ")==0 && i_tmp==4){
-    			if(strcmp(split_cp,"BHZ")==0 && i_tmp==2){
-    				strcpy(kloc1,"");
-//    			fprintf(stderr,"hahahahah%s\n",split_cp);
-    			}
-    			i_tmp++;
-    			split_cp=strtok(NULL,delims);
-    		}
+            //sscanf(cp, "%[^.].%[^.].%[^.].%[^.].%[^.]", knetwk1, kstnm1, kloc1,kcmp1, kdate1);
+            sscanf(cp, "%[^.].%[^.].%[^.].", knetwk1, kstnm1, kloc1);
+            Getname(str[j], kdate1);
+            //sscanf(cp, "%[^.].%[^.].%[^.].%[^.].", kdate1, knetwk1, kstnm1,kloc1);
 
-			delta_date=fabs(atol(kdate)-atol(kdate1));
+            strcpy(cp_tmp,cp);
+            //fprintf(stderr,"%s\n",cp_tmp);
+            split_cp=strtok(cp_tmp,delims);
+            i_tmp=0;
+            while(split_cp!=NULL){
+                //if(strcmp(split_cp,"BHZ")==0 && i_tmp==4){
+                if(strcmp(split_cp,"BHZ")==0 && i_tmp==2){
+                    strcpy(kloc1,"");
+                    //fprintf(stderr,"hahahahah%s\n",split_cp);
+                }
+                i_tmp++;
+                split_cp=strtok(NULL,delims);
+            }
 
-	  		//fprintf(stderr, "cross correlation %ld	%ld\n",atol(kdate),atol(kdate1));
-	  		//fprintf(stderr, "cross correlation %d	%d	%s %s %f	%f\n",i, j, kdate,kdate1,edist,delta_date);
+            delta_date=fabs(atol(kdate)-atol(kdate1));
+            //fprintf(stderr, "cross correlation %ld	%ld\n",atol(kdate),atol(kdate1));
+            //fprintf(stderr, "cross correlation %d	%d	%s %s %f	%f\n",i, j, kdate,kdate1,edist,delta_date);
+
+
+
 
 	 		//if(edist <= 60 && delta_date >= 3000 && (strcmp(knetwk,knetwk1)==0) && (strcmp(kstnm,kstnm1)==0)){ //The two earthquakes must be close between hypocenter and far from origin time.
 	 		//if(edist <= 60 && delta_date > 0 && (strcmp(knetwk,knetwk1)==0) && (strcmp(kstnm,kstnm1)==0)){
