@@ -551,62 +551,60 @@ double dist(double evla, double evlo, double stla, double stlo)
 }
 
 int rsachead(int *P_flag, char **str, int len, int len1, int *len1_valid, double tk1, double tk2, double delta, char ph[]){
+    int i, num, nd, ns, npts, len_valid;
+    float b, ts, tt;
+    struct sac_head hdr = sac_null;
+    FILE *fp;
 
-	int	i, num, nd, ns, npts, len_valid;
-	float	b, ts, tt;
-  struct sac_head hdr = sac_null;
-	FILE *fp;
+    len_valid=0;
+    for(i=0;i<len;i++){
+        //fprintf(stderr,"%s\n",str[i]);
+        if((fp = fopen(str[i], "r")) == NULL){
+            fprintf(stderr, "###############haha open %s failed.\n", str[i]);
+            exit(1);
+            continue;
+        }
+        if(fread(&hdr, sizeof(hdr), 1, fp) != 1){
+            fprintf(stderr, "read failed for header of %s\n",str[i]);
+            continue;
+        }
+        fclose(fp);
 
-	len_valid=0;
-  	for(i=0;i<len;i++){
-		//fprintf(stderr,"%s\n",str[i]);
-		if((fp = fopen(str[i], "r")) == NULL){
-    		fprintf(stderr, "###############haha open %s failed.\n", str[i]);
-			exit(1);
-      		continue;
-  		}
-//	fprintf(stderr,"8***************\n");
-		if(fread(&hdr, sizeof(hdr), 1, fp) != 1){
-  			fprintf(stderr, "read failed for header of %s\n",str[i]);
-			continue;
-		}
-		fclose(fp);
+        npts = hdr.npts;
+        b = hdr.b;
+        //delta = hdr.delta;
 
-		npts = hdr.npts;
-		b = hdr.b;
-//		delta = hdr.delta;
+        //tt = hdr.t1;
+        //fprintf(stderr,"%s\n",ph);
 
-//		tt = hdr.t1;
-//		fprintf(stderr,"%s\n",ph);
-
-		if(strcmp(ph,"t1")==0){
-			tt = hdr.t1;
-	//  		fprintf(stderr,"****%s	%f\n", ph, tt);
-		}else if(strcmp(ph,"t2")==0){
-			tt = hdr.t2;
-		}else if(strcmp(ph,"t3")==0){
-			tt = hdr.t3;
-		}else if(strcmp(ph,"t4")==0){
-			tt = hdr.t4;
-		}else if(strcmp(ph,"t5")==0){
-			tt = hdr.t5;
-		}else if(strcmp(ph,"t6")==0){
-			tt = hdr.t6;
-		}else if(strcmp(ph,"t7")==0){
-//			tt = hdr.t6;
-			tt = hdr.t7;
-		}else if(strcmp(ph,"t8")==0){
-			tt = hdr.t8;
-		}else if(strcmp(ph,"t9")==0){
-			tt = hdr.t9;
-		}else if(strcmp(ph,"t0")==0){
-			tt = hdr.t0;
-		}else {
-			tt = hdr.o;
-	  		//fprintf(stderr,"%f\n", tt);
-		}
-			//tt = hdr.t2;
-	  		//fprintf(stderr,"****%s	%f****\n", ph, tt);
+        if(strcmp(ph,"t1")==0){
+            tt = hdr.t1;
+            //fprintf(stderr,"****%s	%f\n", ph, tt);
+        }else if(strcmp(ph,"t2")==0){
+            tt = hdr.t2;
+        }else if(strcmp(ph,"t3")==0){
+            tt = hdr.t3;
+        }else if(strcmp(ph,"t4")==0){
+            tt = hdr.t4;
+        }else if(strcmp(ph,"t5")==0){
+            tt = hdr.t5;
+        }else if(strcmp(ph,"t6")==0){
+            tt = hdr.t6;
+        }else if(strcmp(ph,"t7")==0){
+            //tt = hdr.t6;
+            tt = hdr.t7;
+        }else if(strcmp(ph,"t8")==0){
+            tt = hdr.t8;
+        }else if(strcmp(ph,"t9")==0){
+            tt = hdr.t9;
+        }else if(strcmp(ph,"t0")==0){
+            tt = hdr.t0;
+        }else {
+            tt = hdr.o;
+            //fprintf(stderr,"%f\n", tt);
+        }
+        //tt = hdr.t2;
+        //fprintf(stderr,"****%s	%f****\n", ph, tt);
 
 		if(fabs(tt+12345)< 1.e-5){continue;}
 		ns=0;
